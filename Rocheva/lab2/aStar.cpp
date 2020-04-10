@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <functional>
+#include <cmath>
 
 using namespace std;
 
@@ -42,21 +43,39 @@ bool inVect(const vector <Vertex*>& vect, Vertex *curr){
 }
 
 // ищем вершину с самой низкой оценкой f(x) = g(x) + h(x)
-Vertex* findMin(vector <Vertex*>& openset, char end){
+Vertex* findMin(vector <Vertex*>& openset, char end1, char end2){
     Vertex *cmp = openset[0];
     int ind = 0;
     int i = 0;
-    double f = cmp->pathFromStart + h(cmp->name, end);
+    double hCmpEnd1 = h(cmp->name, end1);
+    double hCmpEnd2 = h(cmp->name, end2);
+    double f;
+    if (fabs(hCmpEnd1) < fabs(hCmpEnd2))
+        f = hCmpEnd1 + cmp->pathFromStart;
+    else
+        f = hCmpEnd2 + cmp->pathFromStart;
     for (auto & vert : openset){
-        if (((vert->pathFromStart + h(vert->name, end)) < f) || (((vert->pathFromStart + h(vert->name, end)) == f) &&
-                                                                 vert->name > cmp->name)){
-            f = vert->pathFromStart + h(vert->name, end);
+        cout << "Vertex: " << vert->name << endl;
+        double hEnd1 = h(vert->name, end1);
+        double hEnd2 = h(vert->name, end2);
+        cout << "to (" << end1 << ") = " << hEnd1 << "; to (" << end2 << ") = " << hEnd2 << endl;
+        double hVert;
+        if (fabs(hEnd1) < fabs(hEnd2))
+            hVert = hEnd1;
+        else
+            hVert = hEnd2;
+        cout << "choose " << hVert << endl;
+        cout << "h(x) for: " << vert->name << " = " << hVert << ", abs (" << vert->name << ") = " << fabs(hVert) << endl;
+        hVert = fabs(hVert);
+        if (((vert->pathFromStart + hVert) < f) || (((vert->pathFromStart + hVert) == f) &&
+                                                    vert->name > cmp->name)){
+            f = vert->pathFromStart + hVert;
+            cout << "new min: " << vert->name << endl;
             cmp = vert;
             ind = i;
         }
         i++;
     }
-    // удаляем эту вершину их openset
     openset.erase(openset.begin() + ind);
     return cmp;
 }
@@ -70,19 +89,24 @@ void printPath(map <Vertex*, Vertex*>& fromset, char start, char end, vector <Ve
     cout << end;
 }
 
-int checkCurrent(vector <Vertex*>& graph, vector <Vertex*>* openset, map <Vertex*, Vertex*>* fromset, char start, char end){
+int checkCurrent(vector <Vertex*>& graph, vector <Vertex*>* openset, map <Vertex*, Vertex*>* fromset, char start, char end1, char end2){
 
-    auto currentVert = findMin(*openset, end);
+    auto currentVert = findMin(*openset, end1, end2);
     cout << "Current vertex: " << currentVert->name << endl;
-    if (currentVert->name == end){
-        cout << "Path to (" << end << ") was found" << endl;
-        printPath(*fromset, start, end, graph);
+    if (currentVert->name == end1){
+        cout << "Path to (" << end1 << ") was found" << endl;
+        printPath(*fromset, start, end1, graph);
+        return 1;
+    }
+    if (currentVert->name == end2){
+        cout << "Path to (" << end2 << ") was found" << endl;
+        printPath(*fromset, start, end2, graph);
         return 1;
     }
 
-    currentVert->isSeen = true; // всё, показываем, что вершина просмотрена
+    currentVert->isSeen = true;
     cout << "Neighbours:" << endl;
-    for (auto & edge : currentVert->edges) { // цикл по соседям
+    for (auto & edge : currentVert->edges) {
         cout << edge.first;
         auto neighbour = returnVertex(graph, edge.first);
         if (neighbour->isSeen) {
@@ -90,64 +114,36 @@ int checkCurrent(vector <Vertex*>& graph, vector <Vertex*>* openset, map <Vertex
             continue;
         }
 
-        double tentative_g = currentVert->pathFromStart + edge.second; // текущая оценка g
+        double tentative_g = currentVert->pathFromStart + edge.second;
 
         bool tentativeIsBetter;
         if (!inVect(*openset, neighbour)) {
             cout << " add to openset" << endl;
             openset->push_back(neighbour);
-            tentativeIsBetter = true; // ее не было в openset, поэтому точно придется обновлять свойства
+            tentativeIsBetter = true;
         } else {
-            tentativeIsBetter = tentative_g < neighbour->pathFromStart; // true - найден лучший путь до этого соседа
+            tentativeIsBetter = tentative_g < neighbour->pathFromStart;
         }
 
-        if (tentativeIsBetter) { // обновляем свойства вершины
-            (*fromset)[neighbour] = currentVert; // добавляем в карту
+        if (tentativeIsBetter) {
+            (*fromset)[neighbour] = currentVert;
             neighbour->pathFromStart = tentative_g;
         }
     }
     return 0;
 }
 
-void findPath(vector <Vertex*>& graph, char start, char end1, char end2){
+void findPath(vector <Vertex*>& graph, char start, char end1, char end2) {
 
-    bool toEnd2 = true;
-    bool toEnd1 = true;
-    if (end2 == '\0') // отсутсвует вторая кончная вершина
-        toEnd2 = false;
-
-    vector <Vertex*> openset1; // вершины, которые стоит обработать
-    map <Vertex*, Vertex*> fromset1; // карта пройденных вершин
+    vector<Vertex *> openset1; // вершины, которые стоит обработать
+    map<Vertex *, Vertex *> fromset1; // карта пройденных вершин
     returnVertex(graph, start)->pathFromStart = 0;
     openset1.push_back(returnVertex(graph, start)); // сразу добавляем стартовую точку
 
-    vector <Vertex*> openset2;
-    map <Vertex*, Vertex*> fromset2;
-    if (toEnd2){
-        openset2.push_back(returnVertex(graph, start));
-    }
-
-    while (true){
-        if (openset1.empty()){
-            if (!toEnd2 || (toEnd2 && openset2.empty()))
-                break;
-            toEnd1 = false;
-        }
-        if (toEnd2 && openset2.empty()){
-            toEnd2 = false;
-        }
-
+    while (!openset1.empty()) {
         cout << "============" << endl;
-        cout << "To first end:" << endl << endl;
-        if (toEnd1 && checkCurrent(graph, &openset1, &fromset1, start, end1)){
+        if (checkCurrent(graph, &openset1, &fromset1, start, end1, end2)) {
             return;
-        }
-
-        if (toEnd2){
-            cout << "=============" << endl;
-            cout << "To second end:" << endl << endl;
-            if (checkCurrent(graph, &openset2, &fromset2, start, end2))
-                return;
         }
     }
 }
