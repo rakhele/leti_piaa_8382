@@ -50,20 +50,30 @@ Vertex* findMin(vector <Vertex*>& openset, char end1, char end2){
     double hCmpEnd1 = h(cmp->name, end1);
     double hCmpEnd2 = h(cmp->name, end2);
     double f;
-    if (fabs(hCmpEnd1) < fabs(hCmpEnd2))
+    if (end2 == '\0'){
         f = hCmpEnd1 + cmp->pathFromStart;
-    else
-        f = hCmpEnd2 + cmp->pathFromStart;
+    }
+    else {
+        if (fabs(hCmpEnd1) < fabs(hCmpEnd2))
+            f = hCmpEnd1 + cmp->pathFromStart;
+        else
+            f = hCmpEnd2 + cmp->pathFromStart;
+    }
     for (auto & vert : openset){
         cout << "Vertex: " << vert->name << endl;
         double hEnd1 = h(vert->name, end1);
         double hEnd2 = h(vert->name, end2);
         cout << "to (" << end1 << ") = " << hEnd1 << "; to (" << end2 << ") = " << hEnd2 << endl;
         double hVert;
-        if (fabs(hEnd1) < fabs(hEnd2))
+        if (end2 == '\0'){
             hVert = hEnd1;
-        else
-            hVert = hEnd2;
+        }
+        else {
+            if (fabs(hEnd1) < fabs(hEnd2))
+                hVert = hEnd1;
+            else
+                hVert = hEnd2;
+        }
         cout << "choose " << hVert << endl;
         cout << "h(x) for: " << vert->name << " = " << hVert << ", abs (" << vert->name << ") = " << fabs(hVert) << endl;
         hVert = fabs(hVert);
@@ -98,7 +108,7 @@ int checkCurrent(vector <Vertex*>& graph, vector <Vertex*>* openset, map <Vertex
         printPath(*fromset, start, end1, graph);
         return 1;
     }
-    if (currentVert->name == end2){
+    if (end2 != '\0' && currentVert->name == end2){
         cout << "Path to (" << end2 << ") was found" << endl;
         printPath(*fromset, start, end2, graph);
         return 1;
