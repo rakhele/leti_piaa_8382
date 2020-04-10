@@ -1,0 +1,26 @@
+a d f
+a b 1.0
+a c 3.0
+b c 1.0
+c d 4.0
+c e 1.0
+e f 1.0
+.
+a c e
+a d 1.0
+d r 2.0
+a r 2.0
+r t 3.0
+r c 7.0
+r e 3.0
+.
+a w q
+a b 1.0
+a c 1.0
+b e 2.0
+b t 3.0
+b v 4.0
+e v 1.0
+v q 4.0
+v i 5.0
+i w 1.0

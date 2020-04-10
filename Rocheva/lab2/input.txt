@@ -1,0 +1,21 @@
+a e
+a b 1.0
+b f 2.0
+f w 3.0
+f e 5.0
+.
+a e
+a b 1.0
+a g 2.0
+b g 2.0
+b e 3.0
+g e 2.0
+.
+a e
+a b 1.0
+a c 2.0
+a f 3.0
+f e 1.0
+b t 2.0
+c q 1.0
+c b 2.0
