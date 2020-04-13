@@ -44,6 +44,10 @@ bool inVect(const vector <Vertex*>& vect, Vertex *curr){
 
 // ищем вершину с самой низкой оценкой f(x) = g(x) + h(x)
 Vertex* findMin(vector <Vertex*>& openset, char end1, char end2){
+    cout << "Openset now:" << endl;
+    for (auto & vert : openset)
+        cout << vert->name << " ";
+    cout << endl;
     Vertex *cmp = openset[0];
     int ind = 0;
     int i = 0;
@@ -51,42 +55,63 @@ Vertex* findMin(vector <Vertex*>& openset, char end1, char end2){
     double hCmpEnd2 = h(cmp->name, end2);
     double f;
     if (end2 == '\0'){
-        f = hCmpEnd1 + cmp->pathFromStart;
+        f = fabs(hCmpEnd1) + cmp->pathFromStart;
     }
     else {
-        if (fabs(hCmpEnd1) < fabs(hCmpEnd2))
-            f = hCmpEnd1 + cmp->pathFromStart;
-        else
-            f = hCmpEnd2 + cmp->pathFromStart;
-    }
-    for (auto & vert : openset){
-        cout << "Vertex: " << vert->name << endl;
-        double hEnd1 = h(vert->name, end1);
-        double hEnd2 = h(vert->name, end2);
-        cout << "to (" << end1 << ") = " << hEnd1 << "; to (" << end2 << ") = " << hEnd2 << endl;
-        double hVert;
-        if (end2 == '\0'){
-            hVert = hEnd1;
+        if (fabs(hCmpEnd1) < fabs(hCmpEnd2)) {
+            f = fabs(hCmpEnd1) + cmp->pathFromStart;
         }
         else {
-            if (fabs(hEnd1) < fabs(hEnd2))
+            f = fabs(hCmpEnd2) + cmp->pathFromStart;
+        }
+    }
+    cout << "current min f(x) = " << f << endl;
+    for (auto & vert : openset){
+        cout << "Vertex from openset: " << vert->name << endl;
+        double hEnd1 = h(vert->name, end1);
+        double hEnd2 = h(vert->name, end2);
+        cout << "h(x) to (" << end1 << ") = " << hEnd1 << "; h(x) to (" << end2 << ") = " << hEnd2 << endl;
+        double hVert;
+        bool toend1 = false;
+        if (end2 == '\0'){
+            hVert = hEnd1;
+            toend1 = true;
+        }
+        else {
+            if (fabs(hEnd1) < fabs(hEnd2)) {
                 hVert = hEnd1;
+                toend1 = true;
+            }
             else
                 hVert = hEnd2;
         }
-        cout << "choose " << hVert << endl;
-        cout << "h(x) for: " << vert->name << " = " << hVert << ", abs (" << vert->name << ") = " << fabs(hVert) << endl;
+        cout << "choose path to vertex (";
+        if (toend1)
+            cout << end1;
+        else
+            cout << end2;
+        cout << ")" << endl;
+        cout << "|h(x)| for current vertex " << vert->name << " = " << fabs(hVert) << endl;
         hVert = fabs(hVert);
+        cout << "path from start to current vertex = " << vert->pathFromStart << endl;
+        cout << "value of current min f(x) from openset = " << f << endl;
         if (((vert->pathFromStart + hVert) < f) || (((vert->pathFromStart + hVert) == f) &&
                                                     vert->name > cmp->name)){
+            cout << "f(x) of current vertex is less than old value of f(x) = " << f << endl;
             f = vert->pathFromStart + hVert;
-            cout << "new min: " << vert->name << endl;
+            cout << "new f(x) for this openset = " << f << endl;
+            cout << "new min vertex from openset: " << vert->name << endl;
             cmp = vert;
             ind = i;
+        } else {
+            cout << "don't change min f(x)" << endl;
         }
         i++;
+        cout << endl;
     }
+    cout << "delete vertex " << cmp->name << " from openset" << endl;
     openset.erase(openset.begin() + ind);
+    cout << "return min vertex: " << cmp->name << endl << endl;
     return cmp;
 }
 
